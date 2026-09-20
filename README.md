@@ -1,2 +1,2 @@
 # GEANNA
-Happy Birthday 22, Geana!
+Codes for Gie!
