@@ -173,6 +173,7 @@
 
       display: flex;
       align-items: center;
+      align-items: safe center;
       justify-content: center;
 
       opacity: 0;
@@ -202,6 +203,27 @@
         opacity var(--scene-transition-duration) ease,
         transform var(--scene-transition-duration) ease,
         visibility 0s;
+    }
+
+    /*
+      FIX — VIEWPORT / VISIBILITY BUG
+
+      All scenes share one grid cell so they can
+      cross-fade. Without this rule, every scene
+      (even hidden ones) stays "in flow" and the
+      shared stage is sized to the TALLEST scene.
+
+      That made shorter scenes get centered inside
+      leftover empty space from a taller scene,
+      pushing their real content below the fold.
+
+      Taking inactive scenes out of flow means the
+      stage is always sized to the scene that is
+      actually showing.
+    */
+    .scene:not(.is-active) {
+      position: absolute;
+      inset: 0;
     }
 
 
@@ -951,7 +973,7 @@
   position: relative;
 
   width: min(100%, 760px);
-  min-height: min(720px, 100%);
+  min-height: min(720px, 100dvh);
 
   display: flex;
   align-items: center;
@@ -1594,7 +1616,7 @@
 
 .imaginary-guests-scene {
   width: 100%;
-  min-height: 100%;
+  min-height: 100svh;
   padding:
     calc(2rem + env(safe-area-inset-top))
     1rem
@@ -1605,7 +1627,7 @@
 }
 
 .scene-3-intro {
-  min-height: 65vh;
+  min-height: 65svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2061,7 +2083,7 @@
   }
 
   .scene-3-intro {
-    min-height: 58vh;
+    min-height: 58svh;
   }
 
   .scene-3-guests {
@@ -2929,6 +2951,23 @@
 }
 
 
+/*
+  FIX — FULL-BLEED BACKGROUND
+
+  .scene normally reserves side/top/bottom
+  padding for every scene. Scene 5's dark
+  background needs to reach every edge of
+  the phone instead, so its own padding is
+  removed here (only for this one scene).
+  Nothing inside moved: the story text,
+  final text and button already carry their
+  own spacing/safe-area padding.
+*/
+#scene-5 {
+  padding: 0;
+}
+
+
 /* ==========================================
    ❤️ SCENE 5 — HEART CONSTELLATION
    ========================================== */
@@ -2937,6 +2976,7 @@
   position: relative;
 
   min-height: 100svh;
+  min-height: 100dvh;
   width: 100%;
 
   overflow: hidden;
@@ -3635,7 +3675,7 @@
 
   pointer-events: none;
 
-  opacity: 0.18;
+  opacity: 0.26;
 
   filter:
     blur(0.2px);
@@ -3762,6 +3802,37 @@
       translateY(-8px)
       scale(1);
   }
+}
+
+
+/* ==========================================
+   👆 SCREEN-WIDE TAP TO ADVANCE
+   ========================================== */
+
+.scene-6-tap-advance {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 5;
+
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scene-6-tap-advance:disabled {
+  pointer-events: none;
 }
 
 
@@ -5382,7 +5453,7 @@
         </p>
 
         <h2 id="scene-4-star-intro-main">
-          So I found 22 stars for you.  ﾟ☾ ﾟ｡⋆ 
+          So I found 22 stars for you. ✨
         </h2>
       </div>
 
@@ -5395,7 +5466,7 @@
         <span id="scene-4-counter-number">
           0
         </span>
-        <span> / 22 stars discovered ༘⋆</span>
+        <span> / 22 stars discovered ✨</span>
       </div>
 
       <!-- Responsive Star Field -->
@@ -5638,9 +5709,28 @@
 
     </main>
 
+    <!--
+      Invisible full-scene tap trigger.
+
+      Lets the person tap anywhere on the
+      screen to reveal the next line, instead
+      of only the small continue button.
+      Sits behind the real buttons/footer
+      (lower z-index) so those still work
+      exactly as before.
+    -->
+    <button
+      id="scene-6-tap-advance"
+      class="scene-6-tap-advance"
+      type="button"
+      tabindex="-1"
+      aria-hidden="true"
+    ></button>
+
     <!-- ==========================================
          🎀 FINAL CLOSING
          ========================================== -->
+
 
     <div
       id="scene-6-footer"
@@ -5763,7 +5853,7 @@
     const birthdayConfig = {
 
       // CUSTOMIZE THIS
-      name: "Geanna!",
+      name: "Geanna",
 
       // CUSTOMIZE THIS
       musicUrl: "ASSETS/MUSIC/MARGARET.mp3",
@@ -6597,37 +6687,48 @@ const starMessages = [
 // ==========================================
 
 const starPositions = [
-  // Top of the heart
-  { x: 30, y: 27 },
-  { x: 40, y: 23 },
-  { x: 50, y: 28 },
-  { x: 60, y: 23 },
-  { x: 70, y: 27 },
+  // Traced around the outline of a heart, in
+  // order, so connecting each point to the
+  // next (and the last point back to the
+  // first) draws one continuous heart shape.
 
-  // Upper sides
-  { x: 24, y: 36 },
-  { x: 34, y: 34 },
-  { x: 43, y: 38 },
-  { x: 57, y: 38 },
-  { x: 66, y: 34 },
-  { x: 76, y: 36 },
+  // Center dip (top middle notch)
+  { x: 50, y: 25 },
+  { x: 51, y: 23 },
 
-  // Middle
-  { x: 28, y: 46 },
-  { x: 38, y: 47 },
-  { x: 50, y: 51 },
-  { x: 62, y: 47 },
-  { x: 72, y: 46 },
+  // Right lobe (top-right curve)
+  { x: 54, y: 17 },
+  { x: 60, y: 14 },
+  { x: 68, y: 16 },
+  { x: 73, y: 23 },
 
-  // Lower heart
-  { x: 33, y: 57 },
-  { x: 43, y: 61 },
-  { x: 50, y: 67 },
-  { x: 57, y: 61 },
+  // Right side, widest point
+  { x: 73, y: 32 },
 
-  // Point
-  { x: 50, y: 77 },
-  { x: 50, y: 86 }
+  // Right side, narrowing down
+  { x: 68, y: 40 },
+  { x: 60, y: 48 },
+  { x: 54, y: 55 },
+  { x: 51, y: 60 },
+
+  // Bottom point
+  { x: 50, y: 62 },
+
+  // Left side, narrowing up (mirror of right)
+  { x: 49, y: 60 },
+  { x: 46, y: 55 },
+  { x: 40, y: 48 },
+  { x: 32, y: 40 },
+
+  // Left side, widest point
+  { x: 27, y: 32 },
+
+  // Left lobe (top-left curve)
+  { x: 27, y: 23 },
+  { x: 32, y: 16 },
+  { x: 40, y: 14 },
+  { x: 46, y: 17 },
+  { x: 49, y: 23 }
 ];
 
 
@@ -7499,8 +7600,10 @@ function createScene5Constellation() {
   scene5ConstellationLines.innerHTML = "";
 
   /*
-    These connections trace the outside
-    of the heart first, then the center.
+    A single unbroken loop around the heart
+    outline: point 1 to 2, 2 to 3, and so on,
+    then the last point back to the first to
+    close the shape.
   */
 
 const connections = [
@@ -7508,34 +7611,24 @@ const connections = [
   [2, 3],
   [3, 4],
   [4, 5],
-
-  [1, 6],
+  [5, 6],
   [6, 7],
   [7, 8],
   [8, 9],
-  [9, 5],
-
-  [6, 10],
+  [9, 10],
   [10, 11],
   [11, 12],
   [12, 13],
   [13, 14],
-  [14, 9],
-
-  [10, 15],
+  [14, 15],
   [15, 16],
   [16, 17],
   [17, 18],
-  [18, 14],
-
-  [15, 19],
+  [18, 19],
   [19, 20],
   [20, 21],
-  [21, 18],
-
-  [19, 22],
-  [22, 20],
-  [20, 21]
+  [21, 22],
+  [22, 1]
 ];
   
 
@@ -8053,8 +8146,7 @@ let scene6Timer = null;
 function createScene6Heart() {
   if (
     !scene6HeartLines ||
-    !scene6HeartStars ||
-    !starPositions
+    !scene6HeartStars
   ) {
     return;
   }
@@ -8062,47 +8154,79 @@ function createScene6Heart() {
   scene6HeartLines.innerHTML = "";
   scene6HeartStars.innerHTML = "";
 
+  // A faint 5-petal rose made from 22 stars:
+  // 4 stars per petal (base, left bulge, tip,
+  // right bulge), plus 2 stars for the center.
+  // Independent from Scene 5's heart, so Scene
+  // 5's constellation is unaffected.
+  const scene6RosePositions = [
+    { x: 50, y: 36 },
+    { x: 44, y: 27 },
+    { x: 50, y: 17 },
+    { x: 56, y: 27 },
+
+    { x: 47, y: 39 },
+    { x: 36, y: 41 },
+    { x: 28, y: 33 },
+    { x: 39, y: 31 },
+
+    { x: 48, y: 43 },
+    { x: 47, y: 54 },
+    { x: 36, y: 59 },
+    { x: 38, y: 47 },
+
+    { x: 52, y: 43 },
+    { x: 62, y: 47 },
+    { x: 64, y: 59 },
+    { x: 53, y: 54 },
+
+    { x: 53, y: 39 },
+    { x: 61, y: 31 },
+    { x: 72, y: 33 },
+    { x: 64, y: 41 },
+
+    { x: 50, y: 39 },
+    { x: 52, y: 40 }
+  ];
+
+  // Each petal is its own closed loop (4
+  // edges), plus one edge joining the two
+  // center stars.
   const connections = [
     [1, 2],
     [2, 3],
     [3, 4],
-    [4, 5],
+    [4, 1],
 
-    [1, 6],
+    [5, 6],
     [6, 7],
     [7, 8],
-    [8, 9],
-    [9, 5],
+    [8, 5],
 
-    [6, 10],
+    [9, 10],
     [10, 11],
     [11, 12],
-    [12, 13],
+    [12, 9],
+
     [13, 14],
-    [14, 9],
-
-    [10, 15],
+    [14, 15],
     [15, 16],
-    [16, 17],
+    [16, 13],
+
     [17, 18],
-    [18, 14],
-
-    [15, 19],
+    [18, 19],
     [19, 20],
-    [20, 21],
-    [21, 18],
+    [20, 17],
 
-    [19, 22],
-    [22, 20],
-    [20, 21]
+    [21, 22]
   ];
 
   connections.forEach(([from, to]) => {
     const start =
-      starPositions[from - 1];
+      scene6RosePositions[from - 1];
 
     const end =
-      starPositions[to - 1];
+      scene6RosePositions[to - 1];
 
     if (!start || !end) {
       return;
@@ -8143,7 +8267,7 @@ function createScene6Heart() {
     );
   });
 
-  starPositions.forEach(
+  scene6RosePositions.forEach(
     (position) => {
       const star =
         document.createElement("span");
@@ -8421,49 +8545,74 @@ function showScene6Footer() {
 
 /* ==========================================
    ➡️ MANUAL CONTINUE
+   (shared by the small button and the
+   invisible screen-wide tap trigger)
    ========================================== */
+
+const scene6TapAdvance =
+  document.getElementById(
+    "scene-6-tap-advance"
+  );
+
+function advanceSceneSixMessage() {
+
+  const nextIndex =
+    scene6CurrentMessage + 1;
+
+  if (
+    nextIndex <
+    scene6Messages.length
+  ) {
+
+    showScene6Message(
+      nextIndex
+    );
+
+  } else {
+
+    clearScene6Timer();
+
+    if (scene6Continue) {
+      scene6Continue.hidden =
+        true;
+    }
+
+    if (scene6TapAdvance) {
+      scene6TapAdvance.disabled =
+        true;
+    }
+
+    // Keep the final emotional
+    // line visible.
+    //
+    // Only reveal the footer
+    // after a short pause.
+
+    setTimeout(
+      () => {
+        showScene6Footer();
+      },
+      prefersReducedMotion
+        ? 0
+        : 2500
+    );
+  }
+}
 
 if (scene6Continue) {
 
   scene6Continue.addEventListener(
     "click",
-    () => {
+    advanceSceneSixMessage
+  );
 
-      const nextIndex =
-        scene6CurrentMessage + 1;
+}
 
-      if (
-        nextIndex <
-        scene6Messages.length
-      ) {
+if (scene6TapAdvance) {
 
-        showScene6Message(
-          nextIndex
-        );
-
-      } else {
-
-        clearScene6Timer();
-
-        scene6Continue.hidden =
-          true;
-
-        // Keep the final emotional
-        // line visible.
-        //
-        // Only reveal the footer
-        // after a short pause.
-
-        setTimeout(
-          () => {
-            showScene6Footer();
-          },
-          prefersReducedMotion
-            ? 0
-            : 2500
-        );
-      }
-    }
+  scene6TapAdvance.addEventListener(
+    "click",
+    advanceSceneSixMessage
   );
 
 }
@@ -8478,6 +8627,11 @@ function startSceneSix() {
   clearScene6Timer();
 
   scene6CurrentMessage = 0;
+
+  if (scene6TapAdvance) {
+    scene6TapAdvance.disabled =
+      false;
+  }
 
   if (scene6Text) {
 
