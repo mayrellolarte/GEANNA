@@ -6687,48 +6687,49 @@ const starMessages = [
 // ==========================================
 
 const starPositions = [
-  // Traced around the outline of a heart, in
-  // order, so connecting each point to the
-  // next (and the last point back to the
-  // first) draws one continuous heart shape.
+  // A rose: a 5-petal bloom radiating from a
+  // shared center point (1), plus a stem and
+  // one leaf hanging below it. Same shape as
+  // before, spaced further apart so each star
+  // is easy to tap on its own.
 
-  // Center dip (top middle notch)
+  // 1 — center of the bloom
   { x: 50, y: 25 },
-  { x: 51, y: 23 },
 
-  // Right lobe (top-right curve)
-  { x: 54, y: 17 },
-  { x: 60, y: 14 },
-  { x: 68, y: 16 },
-  { x: 73, y: 23 },
+  // Petal 1 (left, tip, right)
+  { x: 36, y: 30 },
+  { x: 28, y: 25 },
+  { x: 36, y: 20 },
 
-  // Right side, widest point
-  { x: 73, y: 32 },
+  // Petal 2
+  { x: 50, y: 39 },
+  { x: 43, y: 46 },
+  { x: 41, y: 36 },
 
-  // Right side, narrowing down
-  { x: 68, y: 40 },
-  { x: 60, y: 48 },
-  { x: 54, y: 55 },
-  { x: 51, y: 60 },
+  // Petal 3
+  { x: 64, y: 29 },
+  { x: 68, y: 38 },
+  { x: 58, y: 37 },
 
-  // Bottom point
-  { x: 50, y: 62 },
+  // Petal 4
+  { x: 58, y: 13 },
+  { x: 68, y: 12 },
+  { x: 64, y: 21 },
 
-  // Left side, narrowing up (mirror of right)
-  { x: 49, y: 60 },
-  { x: 46, y: 55 },
-  { x: 40, y: 48 },
-  { x: 32, y: 40 },
+  // Petal 5
+  { x: 41, y: 14 },
+  { x: 43, y: 4 },
+  { x: 50, y: 11 },
 
-  // Left side, widest point
-  { x: 27, y: 32 },
+  // Stem, hanging from the center
+  { x: 50, y: 54 },
+  { x: 47, y: 66 },
+  { x: 53, y: 78 },
+  { x: 50, y: 90 },
 
-  // Left lobe (top-left curve)
-  { x: 27, y: 23 },
-  { x: 32, y: 16 },
-  { x: 40, y: 14 },
-  { x: 46, y: 17 },
-  { x: 49, y: 23 }
+  // Leaf, branching off the stem
+  { x: 58, y: 64 },
+  { x: 69, y: 58 }
 ];
 
 
@@ -7600,35 +7601,45 @@ function createScene5Constellation() {
   scene5ConstellationLines.innerHTML = "";
 
   /*
-    A single unbroken loop around the heart
-    outline: point 1 to 2, 2 to 3, and so on,
-    then the last point back to the first to
-    close the shape.
+    Five petals, each radiating out from the
+    shared center point (1) and back, plus a
+    stem and one leaf hanging below it.
   */
 
 const connections = [
   [1, 2],
   [2, 3],
   [3, 4],
-  [4, 5],
+  [4, 1],
+
+  [1, 5],
   [5, 6],
   [6, 7],
-  [7, 8],
+  [7, 1],
+
+  [1, 8],
   [8, 9],
   [9, 10],
-  [10, 11],
+  [10, 1],
+
+  [1, 11],
   [11, 12],
   [12, 13],
-  [13, 14],
+  [13, 1],
+
+  [1, 14],
   [14, 15],
   [15, 16],
-  [16, 17],
+  [16, 1],
+
+  [1, 17],
   [17, 18],
   [18, 19],
   [19, 20],
-  [20, 21],
+
+  [17, 21],
   [21, 22],
-  [22, 1]
+  [22, 17]
 ];
   
 
@@ -8355,8 +8366,8 @@ const scene6Messages = [
   {
     text: finalMessage.intro,
     type: "intro",
-    auto: true,
-    duration: 2800
+    auto: false,
+    duration: 0
   },
 
   {
@@ -8369,29 +8380,29 @@ const scene6Messages = [
         )
       ),
     type: "birthday",
-    auto: true,
-    duration: 4000
+    auto: false,
+    duration: 0
   },
 
   {
     text: finalMessage.message,
     type: "message",
-    auto: true,
-    duration: 10000
+    auto: false,
+    duration: 0
   },
 
   {
     text: finalMessage.wishes,
     type: "wishes",
-    auto: true,
-    duration: 10000
+    auto: false,
+    duration: 0
   },
 
   {
     text: finalMessage.distance,
     type: "distance",
-    auto: true,
-    duration: 5000
+    auto: false,
+    duration: 0
   },
 
   {
@@ -8436,7 +8447,7 @@ function showScene6Continue() {
 }
 
 
-function showScene6Message(
+function typeScene6Line(
   messageIndex
 ) {
   const message =
@@ -8451,52 +8462,118 @@ function showScene6Message(
   scene6CurrentMessage =
     messageIndex;
 
-  hideScene6Continue();
+  const line =
+    scene6Text.querySelector(
+      `[data-line="${messageIndex}"]`
+    );
 
-  // Earlier sentences stay on screen.
-  // Only the next sentence fades in.
-  setTimeout(
-    () => {
-      const line =
-        scene6Text.querySelector(
-          `[data-line="${messageIndex}"]`
-        );
+  if (!line) {
+    return;
+  }
 
-      if (line) {
-        line.classList.add(
-          "is-visible"
-        );
-
-        line.removeAttribute(
-          "aria-hidden"
-        );
-      }
-
-      if (!message.auto) {
-        showScene6Continue();
-      }
-    },
-    prefersReducedMotion
-      ? 0
-      : 250
+  line.classList.add(
+    "is-visible"
   );
 
-  if (message.auto) {
-    scene6Timer =
-      setTimeout(
-        () => {
-          showScene6Message(
-            messageIndex + 1
-          );
-        },
-        prefersReducedMotion
-          ? Math.max(
-              500,
-              message.duration * 0.6
-            )
-          : message.duration
-      );
+  line.removeAttribute(
+    "aria-hidden"
+  );
+
+  const fullText = message.text;
+
+  // Reduced motion: show the full
+  // line at once instead of typing
+  // it out character by character.
+  if (prefersReducedMotion) {
+    line.textContent = fullText;
+    scheduleNextScene6Line(
+      messageIndex
+    );
+    return;
   }
+
+  // Comfortable typing/teleprompter
+  // pace — quick enough not to feel
+  // slow, slow enough to read as it
+  // appears.
+  const msPerCharacter = 26;
+
+  let charCount = 0;
+
+  function typeNextCharacter() {
+    charCount += 1;
+
+    line.textContent =
+      fullText.slice(0, charCount);
+
+    if (charCount < fullText.length) {
+      scene6Timer =
+        setTimeout(
+          typeNextCharacter,
+          msPerCharacter
+        );
+    } else {
+      scheduleNextScene6Line(
+        messageIndex
+      );
+    }
+  }
+
+  scene6Timer =
+    setTimeout(
+      typeNextCharacter,
+      msPerCharacter
+    );
+}
+
+
+function scheduleNextScene6Line(
+  messageIndex
+) {
+  // A short beat between sentences,
+  // once one has finished typing.
+  const pauseAfterLine = 550;
+
+  scene6Timer =
+    setTimeout(
+      () => {
+
+        const nextIndex =
+          messageIndex + 1;
+
+        if (
+          nextIndex <
+          scene6Messages.length
+        ) {
+
+          typeScene6Line(
+            nextIndex
+          );
+
+        } else {
+
+          clearScene6Timer();
+
+          // Keep the final emotional
+          // line visible.
+          //
+          // Only reveal the footer
+          // after a short pause.
+
+          setTimeout(
+            () => {
+              showScene6Footer();
+            },
+            prefersReducedMotion
+              ? 0
+              : 2000
+          );
+        }
+      },
+      prefersReducedMotion
+        ? 200
+        : pauseAfterLine
+    );
 }
 
 
@@ -8544,9 +8621,9 @@ function showScene6Footer() {
 
 
 /* ==========================================
-   ➡️ MANUAL CONTINUE
-   (shared by the small button and the
-   invisible screen-wide tap trigger)
+   👆 SCREEN-WIDE TAP TRIGGER
+   (kept in the markup, but no longer needed —
+   the message now types itself out on its own)
    ========================================== */
 
 const scene6TapAdvance =
@@ -8554,67 +8631,8 @@ const scene6TapAdvance =
     "scene-6-tap-advance"
   );
 
-function advanceSceneSixMessage() {
-
-  const nextIndex =
-    scene6CurrentMessage + 1;
-
-  if (
-    nextIndex <
-    scene6Messages.length
-  ) {
-
-    showScene6Message(
-      nextIndex
-    );
-
-  } else {
-
-    clearScene6Timer();
-
-    if (scene6Continue) {
-      scene6Continue.hidden =
-        true;
-    }
-
-    if (scene6TapAdvance) {
-      scene6TapAdvance.disabled =
-        true;
-    }
-
-    // Keep the final emotional
-    // line visible.
-    //
-    // Only reveal the footer
-    // after a short pause.
-
-    setTimeout(
-      () => {
-        showScene6Footer();
-      },
-      prefersReducedMotion
-        ? 0
-        : 2500
-    );
-  }
-}
-
-if (scene6Continue) {
-
-  scene6Continue.addEventListener(
-    "click",
-    advanceSceneSixMessage
-  );
-
-}
-
 if (scene6TapAdvance) {
-
-  scene6TapAdvance.addEventListener(
-    "click",
-    advanceSceneSixMessage
-  );
-
+  scene6TapAdvance.disabled = true;
 }
 
 
@@ -8627,11 +8645,6 @@ function startSceneSix() {
   clearScene6Timer();
 
   scene6CurrentMessage = 0;
-
-  if (scene6TapAdvance) {
-    scene6TapAdvance.disabled =
-      false;
-  }
 
   if (scene6Text) {
 
@@ -8662,12 +8675,6 @@ function startSceneSix() {
           );
         }
 
-        if (message.type === "personal") {
-          line.classList.add(
-            "is-personal"
-          );
-        }
-
         line.setAttribute(
           "data-line",
           String(index)
@@ -8678,8 +8685,9 @@ function startSceneSix() {
           "true"
         );
 
-        line.textContent =
-          message.text;
+        // Left empty on purpose — each
+        // line's text is typed in one
+        // character at a time.
 
         scene6Text.appendChild(line);
       }
@@ -8718,7 +8726,7 @@ function startSceneSix() {
 
   }
 
-  showScene6Message(0);
+  typeScene6Line(0);
 }
 
 
